@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sloth Photo Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.7s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="text-6xl mb-4 animate-bounce">🦥</div>
+            <h1 class="text-4xl md:text-5xl font-bold text-green-800 mb-3">
+                Sloth Photo Finder
+            </h1>
+            <p class="text-lg text-green-600 max-w-md mx-auto">
+                Discover peaceful moments with adorable sloths. Take a deep breath and slow down.
+            </p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-4xl mx-auto">
+            <!-- Action Button -->
+            <div class="text-center mb-8">
+                <button
+                    id="findSlothBtn"
+                    class="inline-flex items-center gap-3 px-8 py-4 rounded-full text-white text-xl font-semibold
+                           transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg
+                           bg-green-600 hover:bg-green-700 hover:shadow-xl"
+                >
+                    <span class="text-2xl">🔍</span>
+                    Find Me a Sloth!
+                </button>
+            </div>
+
+            <!-- Loading Animation -->
+            <div id="loading" class="hidden text-center mb-8">
+                <button class="inline-flex items-center gap-3 px-8 py-4 rounded-full text-white text-xl font-semibold
+                               bg-green-400 cursor-not-allowed">
+                    <div class="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                    Finding a sloth...
+                </button>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error" class="hidden bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-8 rounded-r-lg">
+                <div class="flex items-center">
+                    <span class="text-xl mr-2">🦥</span>
+                    <span id="errorMessage"></span>
+                </div>
+            </div>
+
+            <!-- Photo Display -->
+            <div id="photoDisplay" class="hidden">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-700 ease-out animate-fade-in">
+                    <div class="relative">
+                        <img id="slothPhoto" 
+                             class="w-full h-auto max-h-96 object-cover"
+                             loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <p class="text-white text-sm font-medium drop-shadow-lg">
+                                📸 <span id="photoSource"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 id="photoAlt" class="text-xl font-semibold text-gray-800 mb-3"></h3>
+                        <p id="slothFact" class="text-green-700 bg-green-50 rounded-lg p-4 italic"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Welcome Message -->
+            <div id="welcome" class="text-center py-12">
+                <div class="text-8xl mb-6 filter drop-shadow-lg">🦥</div>
+                <h2 class="text-3xl text-green-700 mb-4 font-semibold">Ready to meet some sloths?</h2>
+                <p class="text-green-600 max-w-md mx-auto text-lg">
+                    Click the button above to discover your first sloth friend! 
+                    Each click brings you a real sloth photo with fascinating facts.
+                </p>
+            </div>
+        </div>
+
+        <!-- Info Footer -->
+        <div class="mt-16 text-center">
+            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-6 max-w-2xl mx-auto shadow-lg">
+                <h3 class="text-lg font-semibold text-green-800 mb-3">🌿 About This App</h3>
+                <p class="text-green-700">
+                    This app showcases real sloth photographs from various sources, 
+                    paired with fascinating facts about these amazing creatures. 
+                    Take a moment to appreciate the art of slowing down!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const findSlothBtn = document.getElementById('findSlothBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const errorMessage = document.getElementById('errorMessage');
+        const photoDisplay = document.getElementById('photoDisplay');
+        const welcome = document.getElementById('welcome');
+        const slothPhoto = document.getElementById('slothPhoto');
+        const photoAlt = document.getElementById('photoAlt');
+        const photoSource = document.getElementById('photoSource');
+        const slothFact = document.getElementById('slothFact');
+
+        const slothFacts = [
+            "💡 <strong>Sloth Fact:</strong> Sloths can turn their heads 270 degrees to survey their surroundings!",
+            "💡 <strong>Sloth Fact:</strong> A sloth's top speed is 0.27 km/h - they've mastered the art of taking it slow!",
+            "💡 <strong>Sloth Fact:</strong> Sloths only climb down from trees once a week to go to the bathroom!",
+            "💡 <strong>Sloth Fact:</strong> Baby sloths cling to their mothers for up to 9 months after birth!",
+            "💡 <strong>Sloth Fact:</strong> Sloths have been around for 35 million years - they're ancient zen masters!",
+            "💡 <strong>Sloth Fact:</strong> A sloth's slow movement helps them avoid detection by predators!",
+            "💡 <strong>Sloth Fact:</strong> Sloths sleep 15-20 hours per day - truly living the dream life!",
+            "💡 <strong>Sloth Fact:</strong> Algae grows on sloth fur, giving them natural camouflage and a mobile ecosystem!",
+            "💡 <strong>Sloth Fact:</strong> Two-toed sloths are actually more closely related to anteaters than three-toed sloths!",
+            "💡 <strong>Sloth Fact:</strong> Sloths have a four-chambered stomach like cows to digest tough leaves!"
+        ];
+
+        async function fetchSlothPhoto() {
+            // Show loading state
+            findSlothBtn.style.display = 'none';
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+            photoDisplay.classList.add('hidden');
+
+            try {
+                // Try Unsplash API first
+                const unsplashAccessKey = '9BOZewBzHli9XbpZySiESB5kOzGVetbhzXAKr378eBk'; // You'll need to get this free from Unsplash
+                let photoData = null;
+
+                // Multiple fallback strategies
+                const strategies = [
+                    // Strategy 1: Try Unsplash API (best quality, need API key)
+                    async () => {
+                        if (unsplashAccessKey !== 'your-unsplash-access-key') {
+                            const response = await fetch(`https://api.unsplash.com/photos/random?query=sloth&orientation=landscape`, {
+                                headers: {
+                                    'Authorization': `Client-ID ${unsplashAccessKey}`
+                                }
+                            });
+                            if (response.ok) {
+                                const data = await response.json();
+                                return {
+                                    url: data.urls.regular,
+                                    alt: data.alt_description || 'A peaceful sloth in its natural habitat',
+                                    photographer: data.user.name,
+                                    source: 'Unsplash'
+                                };
+                            }
+                        }
+                        throw new Error('Unsplash not configured');
+                    },
+
+                    // Strategy 2: Try Lorem Flickr (good for animals)
+                    async () => {
+                        const randomSeed = Math.floor(Math.random() * 10000);
+                        const url = `https://loremflickr.com/800/600/sloth?random=${randomSeed}`;
+                        
+                        // Test if image loads
+                        return new Promise((resolve, reject) => {
+                            const img = new Image();
+                            img.onload = () => resolve({
+                                url: url,
+                                alt: 'A sloth captured in its natural environment',
+                                photographer: 'Flickr Community',
+                                source: 'Lorem Flickr'
+                            });
+                            img.onerror = () => reject(new Error('Lorem Flickr failed'));
+                            img.src = url;
+                        });
+                    },
+
+                    // Strategy 3: Try Unsplash Source (no API key needed)
+                    async () => {
+                        const randomSeed = Math.floor(Math.random() * 10000);
+                        const url = `https://source.unsplash.com/800x600/?sloth&${randomSeed}`;
+                        
+                        return new Promise((resolve, reject) => {
+                            const img = new Image();
+                            img.onload = () => resolve({
+                                url: url,
+                                alt: 'A serene sloth moment captured by nature photographers',
+                                photographer: 'Unsplash Community',
+                                source: 'Unsplash'
+                            });
+                            img.onerror = () => reject(new Error('Unsplash Source failed'));
+                            img.src = url;
+                        });
+                    },
+
+                    // Strategy 4: Fallback to nature photos
+                    async () => {
+                        const randomSeed = Math.floor(Math.random() * 10000);
+                        const url = `https://picsum.photos/800/600?random=${randomSeed}`;
+                        
+                        return new Promise((resolve, reject) => {
+                            const img = new Image();
+                            img.onload = () => resolve({
+                                url: url,
+                                alt: 'A peaceful nature scene (sloth-approved zen vibes)',
+                                photographer: 'Lorem Picsum',
+                                source: 'Nature Photography'
+                            });
+                            img.onerror = () => reject(new Error('Picsum failed'));
+                            img.src = url;
+                        });
+                    }
+                ];
+
+                // Try each strategy until one works
+                for (const strategy of strategies) {
+                    try {
+                        photoData = await strategy();
+                        break;
+                    } catch (err) {
+                        console.log('Strategy failed:', err.message);
+                        continue;
+                    }
+                }
+
+                if (!photoData) {
+                    throw new Error('All image sources failed');
+                }
+
+                // Display the photo
+                slothPhoto.src = photoData.url;
+                slothPhoto.alt = photoData.alt;
+                photoAlt.textContent = photoData.alt;
+                photoSource.textContent = photoData.source;
+                
+                // Add random sloth fact
+                const randomFact = slothFacts[Math.floor(Math.random() * slothFacts.length)];
+                slothFact.innerHTML = randomFact;
+
+                // Hide welcome message and show photo
+                welcome.style.display = 'none';
+                photoDisplay.classList.remove('hidden');
+
+            } catch (err) {
+                console.error('Error fetching sloth photo:', err);
+                errorMessage.textContent = 'The sloths are taking an extra long nap! Try again in a moment 🦥';
+                error.classList.remove('hidden');
+            } finally {
+                // Reset button state
+                loading.classList.add('hidden');
+                findSlothBtn.style.display = 'inline-flex';
+            }
+        }
+
+        // Handle image loading errors
+        slothPhoto.addEventListener('error', function() {
+            errorMessage.textContent = 'This sloth photo is being camera-shy! Click to try another one 🦥';
+            error.classList.remove('hidden');
+            photoDisplay.classList.add('hidden');
+        });
+
+        // Button click handler
+        findSlothBtn.addEventListener('click', fetchSlothPhoto);
+
+        // Add instructions for API key
+        console.log('🦥 Sloth Photo Finder Ready!');
+        console.log('📝 To get the best sloth photos:');
+        console.log('1. Get a free Unsplash API key from https://unsplash.com/developers');
+        console.log('2. Replace "your-unsplash-access-key" in the code with your actual key');
+        console.log('3. The app will work without it, but with lower quality fallback images');
+    </script>
+</body>
+</html>
